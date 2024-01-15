@@ -334,6 +334,7 @@ commands:
           export RUST_VERSION=1.74.0
           # Recommended Rust installation method
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain $RUST_VERSION
+          source ~/.cargo/env
           tool/test/start-core-server.sh
           cd rust/tests/deployment/
           echo "typedb-driver = { version = '0.0.0-$FACTORY_COMMIT', registry = 'typedb-public-snapshot' }" >> Cargo.toml
