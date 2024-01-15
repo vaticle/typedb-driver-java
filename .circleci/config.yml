@@ -328,6 +328,19 @@ commands:
           export DEPLOY_CRATE_TOKEN=$REPO_TYPEDB_CRATES_TOKEN
           bazel run --jobs=8 --define version=$(git rev-parse HEAD) //rust:deploy_crate -- snapshot
 
+  test-crate-snapshot-unix:
+    steps:
+      - run: |
+          export RUST_VERSION=1.74.0
+          # Recommended Rust installation method
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain $RUST_VERSION
+          tool/test/start-core-server.sh
+          cd rust/tests/deployment/
+          echo "typedb-driver = { version = '0.0.0-$FACTORY_COMMIT', registry = 'typedb-public-snapshot' }" >> Cargo.toml
+          cargo test && export TEST_SUCCESS=0 || export TEST_SUCCESS=1
+          tool/test/stop-core-server.sh
+          exit $TEST_SUCCESS
+
   deploy-crate-release-unix:
     steps:
       - run: |
@@ -553,6 +566,7 @@ jobs:
           bazel-arch: amd64
       - install-npm-apt
       - test-npm-snapshot-unix
+      - test-crate-snapshot-unix
 
   ################
   # Release jobs #
