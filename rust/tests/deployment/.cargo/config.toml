@@ -1,0 +1,2 @@
+[registries.typedb-public-snapshot]
+index = "sparse+https://cargo.cloudsmith.io/typedb/public-snapshot/"
