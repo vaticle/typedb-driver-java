@@ -337,7 +337,7 @@ commands:
           source ~/.cargo/env
           tool/test/start-core-server.sh
           cd rust/tests/deployment/
-          echo "typedb-driver = { version = '0.0.0-$FACTORY_COMMIT', registry = 'typedb-public-snapshot' }" >> Cargo.toml
+          echo "typedb-driver = { version = '0.0.0-$(git rev-parse HEAD)', registry = 'typedb-public-snapshot' }" >> Cargo.toml
           cargo test && export TEST_SUCCESS=0 || export TEST_SUCCESS=1
           tool/test/stop-core-server.sh
           exit $TEST_SUCCESS
@@ -373,7 +373,7 @@ commands:
       - run: |
           tool/test/start-core-server.sh
           cd nodejs/test/deployment/
-          npm install --registry https://npm.cloudsmith.io/typedb/public-snapshot/ "typedb-driver@0.0.0-$FACTORY_COMMIT"
+          npm install --registry https://npm.cloudsmith.io/typedb/public-snapshot/ "typedb-driver@0.0.0-$(git rev-parse HEAD)"
           sudo -H npm install jest --global
           jest --detectOpenHandles application.test.js && export TEST_SUCCESS=0 || export TEST_SUCCESS=1
           cd -
