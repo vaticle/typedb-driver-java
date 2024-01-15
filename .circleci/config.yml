@@ -501,9 +501,6 @@ jobs:
       - install-bazel-apt:
           bazel-arch: amd64
       - deploy-crate-snapshot-unix
-      - deploy-maven-snapshot-unix
-      - install-npm-apt
-      - deploy-npm-snapshot-unix
 
   test-snapshot-linux-arm64:
     executor: linux-arm64-amazonlinux-2
@@ -564,8 +561,6 @@ jobs:
       - checkout
       - install-bazel-apt:
           bazel-arch: amd64
-      - install-npm-apt
-      - test-npm-snapshot-unix
       - test-crate-snapshot-unix
 
   ################
@@ -760,16 +755,7 @@ workflows:
             branches:
               only: [master, development]
 
-      - deploy-snapshot-any:
-          filters:
-            branches:
-              only: [master, development]
-          requires:
-            - deploy-snapshot-linux-arm64
-            - deploy-snapshot-linux-x86_64
-            - deploy-snapshot-mac-arm64
-            - deploy-snapshot-mac-x86_64
-            - deploy-snapshot-windows-x86_64
+      - deploy-snapshot-any
 
       - test-snapshot-linux-arm64:
           filters:
@@ -808,9 +794,6 @@ workflows:
             - deploy-snapshot-any
 
       - test-snapshot-any:
-          filters:
-            branches:
-              only: [master, development]
           requires:
             - deploy-snapshot-any
 
