@@ -19,7 +19,6 @@
 
 use std::{collections::HashSet, error::Error as StdError, fmt};
 
-use chrono::{MappedLocalTime, NaiveDateTime};
 use itertools::Itertools;
 use tonic::{Code, Status};
 use tonic_types::StatusExt;
@@ -215,19 +214,15 @@ impl ServerError {
     pub(crate) fn message(&self) -> String {
         self.to_string()
     }
-
-    fn to_string(&self) -> String {
-        if self.stack_trace.is_empty() {
-            format!("[{}] {}. {}", self.error_code, self.error_domain, self.message)
-        } else {
-            format!("\n{}", self.stack_trace.join("\nCaused: "))
-        }
-    }
 }
 
 impl fmt::Display for ServerError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        if self.stack_trace.is_empty() {
+            write!(f, "[{}] {}. {}", self.error_code, self.error_domain, self.message)
+        } else {
+            write!(f, "\n{}", self.stack_trace.join("\nCaused: "))
+        }
     }
 }
 
@@ -349,23 +344,19 @@ impl From<Status> for Error {
             } else {
                 Self::from_message(status.message())
             }
+        } else if status.code() == Code::Unavailable {
+            Self::parse_unavailable(status.message())
+        } else if status.code() == Code::Unknown
+            || is_rst_stream(&status)
+            || status.code() == Code::InvalidArgument
+            || status.code() == Code::FailedPrecondition
+            || status.code() == Code::AlreadyExists
+        {
+            Self::Connection(ConnectionError::ServerConnectionFailedStatusError { error: status.message().to_owned() })
+        } else if status.code() == Code::Unimplemented {
+            Self::Connection(ConnectionError::RPCMethodUnavailable { message: status.message().to_owned() })
         } else {
-            if status.code() == Code::Unavailable {
-                Self::parse_unavailable(status.message())
-            } else if status.code() == Code::Unknown
-                || is_rst_stream(&status)
-                || status.code() == Code::InvalidArgument
-                || status.code() == Code::FailedPrecondition
-                || status.code() == Code::AlreadyExists
-            {
-                Self::Connection(ConnectionError::ServerConnectionFailedStatusError {
-                    error: status.message().to_owned(),
-                })
-            } else if status.code() == Code::Unimplemented {
-                Self::Connection(ConnectionError::RPCMethodUnavailable { message: status.message().to_owned() })
-            } else {
-                Self::from_message(status.message())
-            }
+            Self::from_message(status.message())
         }
     }
 }
